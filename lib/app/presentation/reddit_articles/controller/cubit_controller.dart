@@ -62,11 +62,18 @@ class RedditArticlesCubit extends Cubit<RedditArticlesState> {
     failureOrLoadRedditArticles.fold(
           (failure) => Logger().e(failure),
           (redditArticleResponse) {
-            if(redditArticles.data.children.last.data.name != redditArticleResponse.data.after) {
-              redditArticles.data.children.insertAll(0, redditArticleResponse.data.children);
-            }
-        emit(Success(redditArticles.data.children));
+        var afterIndex = redditArticles.data.children.lastIndexWhere(
+            (redditArticle) =>
+                redditArticle.data.name == redditArticleResponse.data.after);
+        if (afterIndex != -1) {
+          redditArticles.data.children.removeRange(0, afterIndex + 1);
+        } else {
+          redditArticles.data.children.clear();
+        }
+        redditArticles.data.children
+            .insertAll(0, redditArticleResponse.data.children);
 
+        emit(Success(redditArticles.data.children));
       },
     );
   }
