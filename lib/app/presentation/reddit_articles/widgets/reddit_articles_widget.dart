@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:reddit_clone/app/presentation/reddit_articles/widgets/reddit_article_container.dart';
-
-import '../../../data/models/reddit_article_data_model.dart';
 import '../../../domain/entities/reddit_article_data.dart';
 
 class RedditArticlesWidget extends StatelessWidget {
   const RedditArticlesWidget({
     super.key,
-    required this.redditArticles, required this.onRedditArticleTap,
+    required this.redditArticles, required this.onRedditArticleTap, required this.onRefresh,
   });
 
   final List<RedditArticleData> redditArticles;
   final Function(String) onRedditArticleTap;
+  final VoidCallback onRefresh;
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        _buildListView(redditArticles),
-      ]).paddingSymmetric(horizontal: 8, vertical: 24),
+    return RefreshIndicator(
+      onRefresh:  () async => onRefresh.call(),
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          _buildListView(redditArticles),
+        ]).paddingSymmetric(horizontal: 8, vertical: 24),
+      ),
     );
   }
 

@@ -22,7 +22,8 @@ class RedditArticlesView extends StatelessWidget {
           success: (redditArticles) => RedditArticlesWidget(
             redditArticles: redditArticles, onRedditArticleTap:  (redditArticleIdentifier) =>
               BlocProvider.of<RedditArticlesCubit>(context)
-                  .onRedditDetailsTap(redditArticleIdentifier),
+                  .onRedditDetailsTap(redditArticleIdentifier), onRefresh: () async =>
+              BlocProvider.of<RedditArticlesCubit>(context).onRefresh(),
           ),
         );
       },

@@ -4,13 +4,11 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
-import 'package:reddit_clone/app/domain/entities/reddit_article_response.dart';
 import 'package:reddit_clone/app/domain/usecases/get_reddit_articles.dart';
 
 import '../../../core/errors/failure.dart';
 import '../../../core/network/network_info.dart';
 import '../../../core/usecases/usecase.dart';
-import '../../../data/models/reddit_articles_response_data_model.dart';
 import '../../../domain/entities/reddit_articles_response_data.dart';
 import '../../../routes/app_pages.dart';
 import 'index.dart';
@@ -25,6 +23,8 @@ class RedditArticlesCubit extends Cubit<RedditArticlesState> {
   final GetRedditArticles getRedditArticles;
 
   bool _isNetworkEnable = true;
+
+  late RedditArticlesResponseData redditArticles;
 
   Future<void> init() async {
     emit(const Loading());
@@ -44,11 +44,30 @@ class RedditArticlesCubit extends Cubit<RedditArticlesState> {
 
   Future<void> _loadRedditArticles() async {
     final Either<Failure, RedditArticlesResponseData>
-        failureOrLoadRemoteRites = await getRedditArticles.call(NoParams());
-    failureOrLoadRemoteRites.fold(
+        failureOrLoadRedditArticles = await getRedditArticles.call(NoParams());
+    failureOrLoadRedditArticles.fold(
       (failure) => Logger().e(failure),
-      (redditArticleResponse) =>
-          emit(Success(redditArticleResponse.data.children)),
+      (redditArticleResponse) {
+        redditArticles = redditArticleResponse;
+          emit(Success(redditArticles.data.children));
+
+      },
+    );
+  }
+
+  Future<void> onRefresh() async {
+    emit(const Loading());
+    final Either<Failure, RedditArticlesResponseData>
+    failureOrLoadRedditArticles = await getRedditArticles.call(NoParams());
+    failureOrLoadRedditArticles.fold(
+          (failure) => Logger().e(failure),
+          (redditArticleResponse) {
+            if(redditArticles.data.children.last.data.name != redditArticleResponse.data.after) {
+              redditArticles.data.children.insertAll(0, redditArticleResponse.data.children);
+            }
+        emit(Success(redditArticles.data.children));
+
+      },
     );
   }
 
